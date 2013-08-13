@@ -6,3 +6,7 @@
 /java/src/leap-1/bin
 
 /java/src/leap-1/demos
+
+/java/src/leap-2/bin/*.class
+
+/java/src/leap-2/bin/util/*.class
