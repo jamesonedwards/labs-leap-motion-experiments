@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry excluding="util/MailUtil.java|util/UrlUtil.java" kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
+	<classpathentry kind="lib" path="C:/processing/core/library/core.jar"/>
+	<classpathentry kind="lib" path="C:/Users/jameson.edwards/Documents/Software/Java/commons-lang3-3.1/commons-lang3-3.1.jar"/>
+	<classpathentry kind="lib" path="C:/processing/core/library/gluegen-rt.jar"/>
+	<classpathentry kind="lib" path="C:/Users/jameson.edwards/Documents/Software/LeapMotion/LeapSDK+Examples_hotfix_public_win_x86_0.8.1+6221/LeapSDK/lib/LeapJava.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:/Users/jameson.edwards/Documents/Software/LeapMotion/LeapSDK+Examples_hotfix_public_win_x86_0.8.1+6221/LeapSDK/lib/x64"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/processing/modes/java/libraries/minim/library/jl1.0.jar"/>
+	<classpathentry kind="lib" path="C:/processing/modes/java/libraries/minim/library/jsminim.jar"/>
+	<classpathentry kind="lib" path="C:/processing/modes/java/libraries/minim/library/minim.jar"/>
+	<classpathentry kind="lib" path="C:/processing/modes/java/libraries/minim/library/mp3spi1.9.4.jar"/>
+	<classpathentry kind="lib" path="C:/processing/modes/java/libraries/minim/library/tritonus_aos.jar"/>
+	<classpathentry kind="lib" path="C:/processing/modes/java/libraries/minim/library/tritonus_share.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

@@ -6,20 +6,19 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import processing.core.PApplet;
+import util.ShapeUtil;
 
 import com.leapmotion.leap.CircleGesture;
 import com.leapmotion.leap.Controller;
 import com.leapmotion.leap.Frame;
 import com.leapmotion.leap.Gesture;
+import com.leapmotion.leap.Pointable;
 import com.leapmotion.leap.Gesture.State;
 import com.leapmotion.leap.ScreenTapGesture;
 import com.leapmotion.leap.SwipeGesture;
 import com.leapmotion.leap.Vector;
 
-import ddf.minim.AudioOutput;
-import ddf.minim.Minim;
-import ddf.minim.AudioPlayer;
-import ddf.minim.AudioMetaData;
+import ddf.minim.*;
 import ddf.minim.effects.*;
 
 public class MusicPlayer extends PApplet {
@@ -33,13 +32,15 @@ public class MusicPlayer extends PApplet {
 	private static Controller lmController;
 	private static float centerX;
 	private static float centerY;
-	//private static float projectionMultiplier = 1f;
-	//private static float xyMultiplier = 1000f;
+	private static float projectionMultiplier = 1f;
+	private static float xyMultiplier = 1000f;
+	private static float radiusMultiplier = 1f;
+	private static float radiusMin = 5f;
+	private static float radiusMax = 50f;
 	private static Minim minim;
 	private static AudioPlayer song;
 	private static AudioMetaData meta;
-	private static AudioOutput out;
-	//private static int baseBpm;
+	private static BandPass bpf;
 
 	/**
 	 * HACK: Get this PApplet to run from command line.
@@ -69,9 +70,6 @@ public class MusicPlayer extends PApplet {
 			// TODO: Load an audio file (make this interactive?).
 			// Specify 512 for the length of the sample buffers (the default buffer size is 1024).
 			song = minim.loadFile(AUDIO_FILE_PATH, 512);
-
-			// Get the metadata.
-			meta = song.getMetaData();
 			song.loop();
 			song.printControls();
 			/*
@@ -81,14 +79,20 @@ public class MusicPlayer extends PApplet {
 				  Balance, which has a range of 1.0 to -1.0 and doesn't support shifting.
 				  Pan, which has a range of 1.0 to -1.0 and doesn't support shifting.
 			 */
-			
-			//ddf.minim.effects.
 
+			// Make a band pass filter with a center frequency of 440 Hz and a bandwidth of 20 Hz. The third argument is the sample rate of the audio
+			// that will be filtered. It is required to correctly compute values used by the filter.
+			bpf = new BandPass(440, 20, song.sampleRate());
+			song.addEffect(bpf);
+			
+			// Get the metadata.
+			meta = song.getMetaData();
+			
 			// Instantiate the Leap Motion controller.
 			lmController = new Controller();
 
 			// Set gestures to track.
-			lmController.enableGesture(Gesture.Type.TYPE_SCREEN_TAP);
+			//lmController.enableGesture(Gesture.Type.TYPE_SCREEN_TAP);
 			lmController.enableGesture(Gesture.Type.TYPE_CIRCLE);
 			lmController.enableGesture(Gesture.Type.TYPE_SWIPE);
 			
@@ -135,8 +139,48 @@ public class MusicPlayer extends PApplet {
 
 		if (lmController.isConnected()) {
 			Frame frame = lmController.frame();
-			// LOGGER.info("FPS: " + frame.currentFramesPerSecond());
+			LOGGER.fine("FPS: " + frame.currentFramesPerSecond());
 
+			Pointable foremost = frame.pointables().frontmost();
+			if (foremost.isValid()) {
+				Vector direction = foremost.direction();
+				Vector projectedDirection = direction.times(projectionMultiplier);
+
+				// Center x axis around center of window.
+				float x = centerX + projectedDirection.getX() * xyMultiplier;
+				// Center y axis around center of window. Negative since
+				// coordinate system is different.
+				float y = centerY - projectedDirection.getY() * xyMultiplier;
+				// Radius is based on how close the pointer is, with closer values being more negative. Note the lower cap on radius.
+				float z = foremost.tipPosition().getZ();
+				//float radius = z < radiusMin ? radiusMin : -z * radiusMultiplier;
+				float radius;
+				if (z < radiusMin)
+					radius = radiusMin;
+				else if (z > radiusMax)
+					radius = radiusMax;
+				else
+					radius = z * radiusMultiplier;
+				
+				// Draw circle.
+				ShapeUtil.drawCircle(this, x, y, radius, new int[] { 255, 0, 0 });
+				
+				// Map the pointer position to the range [100, 10000], an arbitrary range of passBand frequencies
+				// Make sure x isn't zero.
+				float passBand = map(x > 0 ? x : 1, 1, width, 100, 2000);
+				//float passBand = map(lmController.frame().interactionBox().normalizePoint(projectedDirection).getX(), 0, 1, 100, 10000);
+				bpf.setFreq(passBand);
+				//float bandWidth = map(y, 0, height, 50, 500);
+				float bandWidth = map(radius, radiusMin, radiusMax, 50, 500);
+				//LOGGER.info("radius: " + radius + ", bandWidth: " + bandWidth);
+				//float bandWidth = 100;
+				bpf.setBandWidth(bandWidth);
+				// Prints the new values of the coefficients in the console
+				bpf.printCoeff();
+			}
+			
+			//normalizeGain();
+			
 			for (Gesture gesture : frame.gestures()) {
 				switch (gesture.type()) {
 				case TYPE_CIRCLE:
@@ -192,6 +236,15 @@ public class MusicPlayer extends PApplet {
 		}
 	}
 
+	// TODO: Get this to work.
+	private void normalizeGain() {
+		LOGGER.info("GAIN: " + song.getGain());
+		if (song.getGain() > 1) {
+			LOGGER.info("LOUD! " + song.getGain());
+			song.setGain(1);
+		}
+	}
+	
 	/*
 	 * Basic play controls.
 	 */
@@ -205,6 +258,12 @@ public class MusicPlayer extends PApplet {
 			break;
 		case 'd':
 			lowerVolume();
+			break;
+		case 'e':
+			if (song.isEffected())
+				song.noEffects();
+			else
+				song.effects();
 			break;
 		}
 	}
