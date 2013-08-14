@@ -20,6 +20,7 @@ import ddf.minim.AudioOutput;
 import ddf.minim.Minim;
 import ddf.minim.AudioPlayer;
 import ddf.minim.AudioMetaData;
+import ddf.minim.effects.*;
 
 public class MusicPlayer extends PApplet {
 	// Logging:
@@ -80,6 +81,8 @@ public class MusicPlayer extends PApplet {
 				  Balance, which has a range of 1.0 to -1.0 and doesn't support shifting.
 				  Pan, which has a range of 1.0 to -1.0 and doesn't support shifting.
 			 */
+			
+			//ddf.minim.effects.
 
 			// Instantiate the Leap Motion controller.
 			lmController = new Controller();
