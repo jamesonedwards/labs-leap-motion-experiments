@@ -36,6 +36,10 @@ public class TempoMusicPlayer extends PApplet {
 	private static Controller lmController;
 	private static float centerX;
 	private static float centerY;
+	private static int waveformMultiplier = 100;
+	private static float waveformXOffest;
+	private static float waveformYOffest;
+	private static float leftRightSpread;
 	private static float projectionMultiplier = 1f;
 	private static float xyMultiplier = 1000f;
 	private static float radiusMultiplier = 1f;
@@ -95,6 +99,11 @@ public class TempoMusicPlayer extends PApplet {
 
 			// Get the metadata.
 			meta = filePlayer.getMetaData();
+
+			// Set positionion elements.
+			waveformXOffest = centerX - audioOutput.bufferSize() / 2;
+			waveformYOffest = centerY - waveformMultiplier / 2;
+			leftRightSpread = waveformMultiplier * 2;
 			
 			// Instantiate the Leap Motion controller.
 			lmController = new Controller();
@@ -119,17 +128,7 @@ public class TempoMusicPlayer extends PApplet {
 		}
 	}
 
-	public void draw() {
-		background(0);
-		String titleText = "Title: " + meta.title();
-		int waveformMultiplier = 100;
-		float waveformXOffest = centerX - audioOutput.bufferSize() / 2;
-		float waveformYOffest = centerY - waveformMultiplier / 2;
-		float leftRightSpread = waveformMultiplier * 2;
-		float titleXOffset = 0;
-		float titleYOffset = -waveformMultiplier / 2;
-		text(titleText, centerX - textWidth(titleText) / 2 + titleXOffset, centerY + titleYOffset);
-
+	private void drawWaveform() {
 		/*
 		 * We draw the waveform by connecting neighbor values with a line/ We multiply each of the values by 50 because the values in the buffers are
 		 * normalized. This means that they have values between -1 and 1. If we don't scale them up our waveform will look more or less like a
@@ -144,6 +143,15 @@ public class TempoMusicPlayer extends PApplet {
 			line(waveformXOffest + i, leftRightSpread + audioOutput.right.get(i) * waveformMultiplier + waveformYOffest, i + 1 + waveformXOffest,
 					leftRightSpread + audioOutput.right.get(i + 1) * waveformMultiplier + waveformYOffest);
 		}
+	}
+	
+	public void draw() {
+		background(0);
+		drawWaveform();
+		String titleText = "Title: " + meta.title();
+		float titleXOffset = 0;
+		float titleYOffset = -waveformMultiplier / 2;
+		text(titleText, centerX - textWidth(titleText) / 2 + titleXOffset, centerY + titleYOffset);
 
 		if (lmController.isConnected()) {
 			Frame frame = lmController.frame();

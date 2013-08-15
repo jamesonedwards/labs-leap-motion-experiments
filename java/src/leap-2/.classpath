@@ -16,5 +16,12 @@
 	<classpathentry kind="lib" path="C:/processing/modes/java/libraries/minim/library/mp3spi1.9.4.jar"/>
 	<classpathentry kind="lib" path="C:/processing/modes/java/libraries/minim/library/tritonus_aos.jar"/>
 	<classpathentry kind="lib" path="C:/processing/modes/java/libraries/minim/library/tritonus_share.jar"/>
+	<classpathentry kind="lib" path="C:/processing/modes/java/libraries/video/library/video.jar" sourcepath="C:/processing/modes/java/libraries/video/src">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:/processing/modes/java/libraries/video/library/windows64"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/processing/modes/java/libraries/video/library/gstreamer-java.jar"/>
+	<classpathentry kind="lib" path="C:/processing/modes/java/libraries/video/library/jna.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
