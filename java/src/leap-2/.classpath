@@ -12,7 +12,7 @@
 	</classpathentry>
 	<classpathentry kind="lib" path="C:/processing/modes/java/libraries/minim/library/jl1.0.jar"/>
 	<classpathentry kind="lib" path="C:/processing/modes/java/libraries/minim/library/jsminim.jar"/>
-	<classpathentry kind="lib" path="C:/processing/modes/java/libraries/minim/library/minim.jar"/>
+	<classpathentry kind="lib" path="C:/processing/modes/java/libraries/minim/library/minim.jar" sourcepath="C:/processing/modes/java/libraries/minim/src"/>
 	<classpathentry kind="lib" path="C:/processing/modes/java/libraries/minim/library/mp3spi1.9.4.jar"/>
 	<classpathentry kind="lib" path="C:/processing/modes/java/libraries/minim/library/tritonus_aos.jar"/>
 	<classpathentry kind="lib" path="C:/processing/modes/java/libraries/minim/library/tritonus_share.jar"/>
