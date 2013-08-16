@@ -3,6 +3,7 @@ import processing.core.PApplet;
 import processing.core.PGraphics;
 import processing.core.PImage;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Logger;
@@ -16,9 +17,6 @@ public class Flashlight extends PApplet {
 	private final static Logger LOGGER = Logger.getLogger("FlashlightLogger");
 	private final static int WINDOW_WIDTH = 1000;
 	private final static int WINDOW_HEIGHT = 667;
-	private final static String ASSET_PATH = "C:\\Dev\\labs-leap-motion-experiments\\java\\src\\leap-1\\assets\\";
-	private final static String BG_IMAGE_PATH = ASSET_PATH + "bg_image.jpg";
-	private final static String MASK_IMAGE_PATH = ASSET_PATH + "mask_image.jpg";
 
 	private static Controller controller;
 	private static float centerX;
@@ -32,7 +30,11 @@ public class Flashlight extends PApplet {
 	private static PGraphics pg;
 	private static boolean persistDots = false;
 	private static ArrayList<float[]> dots = new ArrayList<float[]>();
-
+	private static String assetPath = System.getProperty("user.dir") + File.separator + "assets" + File.separator;
+	private static String bgImagePath = assetPath + "bg_image.jpg";
+	private static String maskImagePath = assetPath + "mask_image.jpg";
+	
+	
 	/**
 	 * HACK: Get this PApplet to run from command line.
 	 * 
@@ -60,11 +62,11 @@ public class Flashlight extends PApplet {
 
 			// Load background and mask images, and resize them to the size of the window.
 			int imgBorderHack = 0;
-			bgImage = loadImage(BG_IMAGE_PATH);
+			bgImage = loadImage(bgImagePath);
 			if (bgImage == null)
 				throw new Exception("In setup(), the PImage for bgImage was null for some reason");
 			bgImage.resize(width + imgBorderHack, height + imgBorderHack);
-			maskImage = loadImage(MASK_IMAGE_PATH);
+			maskImage = loadImage(maskImagePath);
 			if (maskImage == null)
 				throw new Exception("In setup(), the PImage for maskImage was null for some reason");
 			maskImage.resize(width + imgBorderHack, height + imgBorderHack);

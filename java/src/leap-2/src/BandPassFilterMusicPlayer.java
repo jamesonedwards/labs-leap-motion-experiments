@@ -1,3 +1,4 @@
+import java.io.File;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Logger;
 
@@ -26,8 +27,6 @@ public class BandPassFilterMusicPlayer extends PApplet {
 	private final static Logger LOGGER = Logger.getLogger(BandPassFilterMusicPlayer.class.getName() + "Logger");
 	private final static int WINDOW_WIDTH = 1000;
 	private final static int WINDOW_HEIGHT = 667;
-	private final static String ASSET_PATH = "C:\\Dev\\labs-leap-motion-experiments\\java\\src\\leap-2\\assets\\";
-	private final static String AUDIO_FILE_PATH = ASSET_PATH + "dnb-sample-1.mp3";
 
 	private static Controller lmController;
 	private static float centerX;
@@ -41,6 +40,8 @@ public class BandPassFilterMusicPlayer extends PApplet {
 	private static AudioPlayer audioPlayer;
 	private static AudioMetaData meta;
 	private static BandPass bpf;
+	private static String assetPath = System.getProperty("user.dir") + File.separator + "assets" + File.separator;
+	private final static String audioFilePath = assetPath + "dnb-sample-1.mp3";
 
 	/**
 	 * HACK: Get this PApplet to run from command line.
@@ -69,7 +70,7 @@ public class BandPassFilterMusicPlayer extends PApplet {
 			minim = new Minim(this);
 			// TODO: Load an audio file (make this interactive?).
 			// Specify 512 for the length of the sample buffers (the default buffer size is 1024).
-			audioPlayer = minim.loadFile(AUDIO_FILE_PATH, 512);
+			audioPlayer = minim.loadFile(audioFilePath, 512);
 			audioPlayer.loop();
 			audioPlayer.printControls();
 			/*

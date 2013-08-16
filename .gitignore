@@ -10,3 +10,8 @@
 /java/src/leap-2/bin/*.class
 
 /java/src/leap-2/bin/util/*.class
+
+/java/src/leap-1/deploy
+/java/src/leap-2/deploy
+
+/java/src/leap-2/*.log

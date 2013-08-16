@@ -1,3 +1,4 @@
+import java.io.File;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Logger;
 
@@ -29,10 +30,7 @@ public class TempoMusicPlayer extends PApplet {
 	private final static int WINDOW_WIDTH = 1000;
 	private final static int WINDOW_HEIGHT = 667;
 	private final static int FILE_BUFFER_SIZE = 512;
-	private final static String ASSET_PATH = "C:\\Dev\\labs-leap-motion-experiments\\java\\src\\leap-2\\assets\\";
-	//private final static String AUDIO_FILE_PATH = ASSET_PATH + "dnb-sample-1.mp3";
-	private final static String AUDIO_FILE_PATH = ASSET_PATH + "8-DaftPunkGetLuckyfeatPharrellWilliams.mp3";
-
+	
 	private static Controller lmController;
 	private static float centerX;
 	private static float centerY;
@@ -52,6 +50,8 @@ public class TempoMusicPlayer extends PApplet {
 	private static TickRate tickRate;
 	private static float tickRateRate = 1f;
 	private static boolean enableEffects = true;
+	private static String assetPath = System.getProperty("user.dir") + File.separator + "assets" + File.separator;
+	private final static String audioFilePath = assetPath + "8-DaftPunkGetLuckyfeatPharrellWilliams.mp3";
 
 	/**
 	 * HACK: Get this PApplet to run from command line.
@@ -79,7 +79,7 @@ public class TempoMusicPlayer extends PApplet {
 
 			minim = new Minim(this);
 			// TODO: Load an audio file (make this interactive?).
-			AudioRecordingStream myFile = minim.loadFileStream(AUDIO_FILE_PATH, // the file to load
+			AudioRecordingStream myFile = minim.loadFileStream(audioFilePath, // the file to load
 					FILE_BUFFER_SIZE, // Specify 512 for the length of the sample buffers (the default buffer size is 1024).
 					true // whether to load it totally into memory or not we say true because the file is short.
 					);

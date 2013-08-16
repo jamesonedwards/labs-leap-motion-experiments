@@ -1,3 +1,4 @@
+import java.io.File;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Logger;
 
@@ -7,8 +8,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import processing.core.*;
 import processing.video.*;
-
-import util.ShapeUtil;
 
 import com.leapmotion.leap.CircleGesture;
 import com.leapmotion.leap.Controller;
@@ -30,22 +29,19 @@ public class VideoScrubber extends PApplet {
 	private final static Logger LOGGER = Logger.getLogger(VideoScrubber.class.getName() + "Logger");
 	private final static int WINDOW_WIDTH = 1280;
 	private final static int WINDOW_HEIGHT = 720;
-	private final static String ASSET_PATH = "C:\\Dev\\labs-leap-motion-experiments\\java\\src\\leap-2\\assets\\";
-	private final static String VIDEO_FILE_PATH = ASSET_PATH + "video-sample-1.mp4";
 
 	private static Controller lmController;
 	private static float centerX;
 	private static float centerY;
 	private static float projectionMultiplier = 1f;
 	private static float xyMultiplier = 1000f;
-	private static float radiusMultiplier = 1f;
-	private static float radiusMin = 10f;
-	private static float radiusMax = 10f;
 	private static Movie movie;
 	private static boolean moviePlaying = true;
 	private static float movieVolumeIncrement = 0.05f;
 	private static float movieVolume = 0.5f; // Set initial movie volume to 50%.
 	private static int movieFrameRate = 29; // Set the frame rate for this app to that of the movie.
+	private static String assetPath = System.getProperty("user.dir") + File.separator + "assets" + File.separator;
+	private static String videoFilePath = assetPath + "video-sample-1.mp4";
 
 	/**
 	 * HACK: Get this PApplet to run from command line.
@@ -73,7 +69,9 @@ public class VideoScrubber extends PApplet {
 			findFrame().setResizable(false);
 
 			// TODO: Load a video file (make this interactive?).
-			movie = new Movie(this, VIDEO_FILE_PATH);
+			if (!new File(videoFilePath).exists())
+				throw new Exception("File doesn't exist: " + videoFilePath);
+			movie = new Movie(this, videoFilePath);
 			movie.loop();
 
 			// Set initial movie volume to 50%, and keep track of volume in separate param.
@@ -117,17 +115,8 @@ public class VideoScrubber extends PApplet {
 				float x = centerX + projectedDirection.getX() * xyMultiplier;
 				// Center y axis around center of window. Negative since
 				// coordinate system is different.
-				float y = centerY - projectedDirection.getY() * xyMultiplier;
-				// Radius is based on how close the pointer is, with closer values being more negative. Note the lower cap on radius.
-				float z = foremost.tipPosition().getZ();
-				float radius;
-				if (z < radiusMin)
-					radius = radiusMin;
-				else if (z > radiusMax)
-					radius = radiusMax;
-				else
-					radius = z * radiusMultiplier;
-
+				//float y = centerY - projectedDirection.getY() * xyMultiplier;
+				
 				if (moviePlaying) {
 					// Draw the video frames.
 					// Ratio of mouse X over width
@@ -144,8 +133,12 @@ public class VideoScrubber extends PApplet {
 				// Display frame
 				image(movie, 0, 0);
 
-				// Draw circle.
-				ShapeUtil.drawCircle(this, x, y, radius, new int[] { 0, 255, 0 });
+				// Draw vertical bar.
+				stroke(0, 255, 0);
+				strokeWeight(10);
+				line(x, 0, x, height);
+				stroke(0);
+				strokeWeight(1);
 			} else {
 				// "Play" movie...
 				// Read frame
