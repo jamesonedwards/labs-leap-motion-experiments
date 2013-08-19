@@ -8,6 +8,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import processing.core.*;
 import processing.video.*;
+import util.ShapeUtil;
 
 import com.leapmotion.leap.CircleGesture;
 import com.leapmotion.leap.Controller;
@@ -37,7 +38,7 @@ public class VideoScrubber extends PApplet {
 	private static float xyMultiplier = 1000f;
 	private static Movie movie;
 	private static boolean moviePlaying = true;
-	private static float movieVolumeIncrement = 0.05f;
+	private static float movieVolumeIncrement = 0.02f;
 	private static float movieVolume = 0.5f; // Set initial movie volume to 50%.
 	private static int movieFrameRate = 29; // Set the frame rate for this app to that of the movie.
 	private static String assetPath = System.getProperty("user.dir") + File.separator + "assets" + File.separator;
@@ -107,7 +108,9 @@ public class VideoScrubber extends PApplet {
 			LOGGER.fine("FPS: " + frame.currentFramesPerSecond());
 
 			Pointable foremost = frame.pointables().frontmost();
-			if (foremost.isValid()) {
+			// Use one hand to scrub video.
+			if (foremost.isValid() && frame.hands().count() == 1) {
+
 				Vector direction = foremost.direction();
 				Vector projectedDirection = direction.times(projectionMultiplier);
 
@@ -115,8 +118,8 @@ public class VideoScrubber extends PApplet {
 				float x = centerX + projectedDirection.getX() * xyMultiplier;
 				// Center y axis around center of window. Negative since
 				// coordinate system is different.
-				//float y = centerY - projectedDirection.getY() * xyMultiplier;
-				
+				// float y = centerY - projectedDirection.getY() * xyMultiplier;
+
 				if (moviePlaying) {
 					// Draw the video frames.
 					// Ratio of mouse X over width
@@ -124,21 +127,24 @@ public class VideoScrubber extends PApplet {
 
 					// The jump() function allows you to jump immediately to a point of time within the video.
 					// Duration() returns the total length of the movie in seconds.
-					movie.jump(ratio * movie.duration());
+					float jumpLocation = ratio * movie.duration(); 
+					movie.jump(jumpLocation);
+
+					// "Play" movie...
+					// Read frame
+					movie.read();
+					// Display frame
+					image(movie, 0, 0);
+	
+					// Draw vertical bar.
+					stroke(0, 255, 0);
+					strokeWeight(10);
+					line(x, 0, x, height);
+					stroke(0);
+					strokeWeight(1);
+					
+					printScrubbingText(jumpLocation);
 				}
-
-				// "Play" movie...
-				// Read frame
-				movie.read();
-				// Display frame
-				image(movie, 0, 0);
-
-				// Draw vertical bar.
-				stroke(0, 255, 0);
-				strokeWeight(10);
-				line(x, 0, x, height);
-				stroke(0);
-				strokeWeight(1);
 			} else {
 				// "Play" movie...
 				// Read frame
@@ -151,13 +157,16 @@ public class VideoScrubber extends PApplet {
 				switch (gesture.type()) {
 				case TYPE_CIRCLE:
 					LOGGER.info("Circle gesture detected.");
-					CircleGesture circle = new CircleGesture(gesture);
-					// Calculate clock direction using the angle between circle normal and pointable.
-					if (circle.pointable().direction().angleTo(circle.normal()) <= Math.PI / 4) {
-						// Clockwise if angle is less than 90 degrees.
-						raiseVolume();
-					} else {
-						lowerVolume();
+					// Use two hands to change the volume.
+					if (frame.hands().count() > 1) {
+						CircleGesture circle = new CircleGesture(gesture);
+						// Calculate clock direction using the angle between circle normal and pointable.
+						if (circle.pointable().direction().angleTo(circle.normal()) <= Math.PI / 4) {
+							// Clockwise if angle is less than 90 degrees.
+							raiseVolume();
+						} else {
+							lowerVolume();
+						}
 					}
 					break;
 				case TYPE_SWIPE:
@@ -197,16 +206,37 @@ public class VideoScrubber extends PApplet {
 		}
 	}
 
+	private void printScrubbingText(float x) {
+		String msg = "Scrubbing: " + x;
+		ShapeUtil.drawRectangleWithText(this, centerX - textWidth(msg) / 2, centerY, 10, 10, 10, 40, 0, new int[] { 200, 200, 200 }, new int[] { 0,
+				0, 0 }, 20, new String[] { msg });
+	}
+
+	private void printVolumeText(float volume) {
+		String msg = "";
+		if (volume == 0) {
+			msg = "Minimum volume";
+		} else if (volume == 1) {
+			msg = "Maximum volume";
+		} else {
+			msg = "Setting volume to " + floor(volume * 100) + "%";
+		}
+		ShapeUtil.drawRectangleWithText(this, centerX - textWidth(msg) / 2, centerY, 10, 10, 10, 40, 0, new int[] { 200, 200, 200 }, new int[] { 0,
+				0, 0 }, 20, new String[] { msg });
+	}
+
 	private void raiseVolume() {
 		movieVolume = movieVolume < 1 - movieVolumeIncrement ? movieVolume + movieVolumeIncrement : 1;
 		LOGGER.info("RaiseVolume() called setting volume to " + movieVolume);
 		movie.volume(movieVolume);
+		printVolumeText(movieVolume);
 	}
 
 	private void lowerVolume() {
 		movieVolume = movieVolume > movieVolumeIncrement ? movieVolume - movieVolumeIncrement : 0;
 		LOGGER.info("LowerVolume() called setting volume to " + movieVolume);
 		movie.volume(movieVolume);
+		printVolumeText(movieVolume);
 	}
 
 	private void togglePlay() {
