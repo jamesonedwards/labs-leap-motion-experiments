@@ -1,4 +1,3 @@
-import com.leapmotion.*;
 import com.leapmotion.leap.*;
 import processing.core.PApplet;
 

@@ -13,21 +13,19 @@ import util.LeapMotionUtil;
 import com.leapmotion.leap.Controller;
 import com.leapmotion.leap.Frame;
 import com.leapmotion.leap.Hand;
-import com.leapmotion.leap.InteractionBox;
 import com.leapmotion.leap.Pointable;
 import com.leapmotion.leap.Vector;
 
 import ddf.minim.*;
-import ddf.minim.effects.*;
-import ddf.minim.spi.*; // for AudioRecordingStream
+import ddf.minim.signals.SineWave;
 import ddf.minim.ugens.*;
 
 public class SimpleTheremin extends PApplet {
 	// Logging:
 	private final static Logger LOGGER = Logger.getLogger(SimpleTheremin.class.getName() + "Logger");
-	private final static int WINDOW_WIDTH = 1000;
-	private final static int WINDOW_HEIGHT = 667;
-	private final static int FILE_BUFFER_SIZE = 512;
+	private final static int WINDOW_WIDTH = 1600;
+	private final static int WINDOW_HEIGHT = 800;
+	private final static int FILE_BUFFER_SIZE = 1024;
 
 	private static Controller lmController;
 	private static float centerX;
@@ -37,12 +35,14 @@ public class SimpleTheremin extends PApplet {
 	private static float waveformYOffest;
 	private static float leftRightSpread;
 	//private static float projectionMultiplier = 1f;
-	private static float xyMultiplier = 1f;
+	//private static float xyMultiplier = 1f;
 	private static float radiusMultiplier = 1f;
 	private static float radiusMin = 5f;
 	private static float radiusMax = 5f;
 	private static Minim minim;
 	private static AudioOutput audioOutput;
+	//private static ToneInstrument tone;
+	private static SineWave sine;
 
 	/**
 	 * HACK: Get this PApplet to run from command line.
@@ -70,11 +70,14 @@ public class SimpleTheremin extends PApplet {
 
 			minim = new Minim(this);
 
-			// Get a line out from Minim. It's important that the file is the same audio format as our output (i.e. same sample rate, number of
-			// channels, etc).
-			audioOutput = minim.getLineOut();
-
-			// Set positionion elements.
+			// Get a line out from Minim.
+			audioOutput = minim.getLineOut(Minim.MONO, FILE_BUFFER_SIZE);
+			sine = new SineWave(0f, 0.5f, audioOutput.sampleRate()); // here the sine is generated it has A (frequency) = 440Hz , 0.5 amplitude and sample rate
+			sine.portamento(100); // set the portamento speed on the oscillator to 200 milliseconds
+			audioOutput.addSignal(sine);
+			audioOutput.mute();
+			
+			// Set waveform position elements.
 			waveformXOffest = centerX - audioOutput.bufferSize() / 2;
 			waveformYOffest = centerY - waveformMultiplier / 2;
 			leftRightSpread = waveformMultiplier * 2;
@@ -114,9 +117,12 @@ public class SimpleTheremin extends PApplet {
 				Pointable rPointer = rHand.pointables().leftmost();
 
 				if (lPointer.isValid() && rPointer.isValid()) {
+					
+					// FIXME: FIX HAND PARTITIONING MATH!
+					
 					// Transform coordinates from Leap to Processing.
-					Vector lPosition = LeapMotionUtil.leapToProcessingVector(this, lmController, lPointer.tipPosition());
-					Vector rPosition = LeapMotionUtil.leapToProcessingVector(this, lmController, rPointer.tipPosition());
+					Vector lPosition = LeapMotionUtil.leapToProcessingVector(this, lmController, lPointer.tipPosition(), LeapMotionUtil.LEFT_HAND);
+					Vector rPosition = LeapMotionUtil.leapToProcessingVector(this, lmController, rPointer.tipPosition(), LeapMotionUtil.RIGHT_HAND);
 
 					/*
 					// Radius is based on how close the pointer is, with closer values being more negative. Note the lower cap on radius.
@@ -131,24 +137,37 @@ public class SimpleTheremin extends PApplet {
 						radius = z * radiusMultiplier;
 					*/
 					
+					// FIXME: Get this to play a continuous tone!
+					// TRY THIS: https://forum.processing.org/topic/i-want-to-hear-continues-sound-as-long-as-i-paint#25080000001421145
+					
+					// Play a note based on the pointer positions.
+					float frequencyMin = 10f;
+					float frequencyMax = 4000f;
+					float amplitudeMin = -40f;
+					float amplitudeMax = 4f;
+					
+					//tone = new ToneInstrument(
+					//		map(rPosition.getX(), 0, width, frequencyMin, frequencyMax),
+					//		map(lPosition.getY(), height, 0, amplitudeMin, amplitudeMax),
+					//		audioOutput);
+					// Get the note duration, based on the frame rate.
+					//float noteDuration = 1 / frame.currentFramesPerSecond();
+					//audioOutput.playNote(0f, noteDuration, tone);
+					
+					sine.setFreq(map(rPosition.getX(), 0, width, frequencyMin, frequencyMax));
+					audioOutput.setGain(map(lPosition.getY(), height, 0, amplitudeMin, amplitudeMax));
+				    audioOutput.unmute();
+					
 					// Draw guide markers.
 					ShapeUtil.drawCircle(this, lPosition.getX(), lPosition.getY(), radiusMin, new int[] { 255, 0, 0 });
 					ShapeUtil.drawCircle(this, rPosition.getX(), rPosition.getY(), radiusMin, new int[] { 0, 255, 0 });
 				}
+			} else {
+				audioOutput.mute();
 			}
 
 			LOGGER.info("Num hands detected: " + frame.hands().count());
 		}
-	}
-
-	private void raiseVolume() {
-		LOGGER.info("RaiseVolumn() called with current GAIN = " + audioOutput.getGain());
-		audioOutput.setGain(audioOutput.getGain() + 0.3f);
-	}
-
-	private void lowerVolume() {
-		LOGGER.info("LowerVolumn() called with current GAIN = " + audioOutput.getGain());
-		audioOutput.setGain(audioOutput.getGain() - 0.3f);
 	}
 
 	private void cleanup() {
