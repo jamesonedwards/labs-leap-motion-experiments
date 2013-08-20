@@ -156,4 +156,16 @@ public class ShapeUtil {
 		Color c = Color.decode(colorStr);
 		return new int[] { c.getRed(), c.getGreen(), c.getBlue() };
 	}
+
+	/**
+	 * Get the current frame. (A hack for Eclipse from https://forum.processing.org/topic/trying-to-use-processing-in-eclipse).
+	 * 
+	 * @return
+	 */
+	public static java.awt.Frame findFrame(PApplet pApplet) {
+		java.awt.Container f = pApplet.getParent();
+		while (!(f instanceof java.awt.Frame) && f != null)
+			f = f.getParent();
+		return (java.awt.Frame) f;
+	}
 }
