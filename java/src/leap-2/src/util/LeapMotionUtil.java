@@ -1,5 +1,7 @@
 package util;
 
+import org.gstreamer.lowlevel.Handle;
+
 import processing.core.PApplet;
 
 import com.leapmotion.leap.Controller;
@@ -33,27 +35,42 @@ public class LeapMotionUtil {
 				iBoxVector.getZ());
 	}
 
-	public static Vector leapToProcessingVector(PApplet pApplet, Controller lmController, Vector leapVector, int hand) {
-		float xMin = 0;
-		float xMax = 0;
+	public static Vector leapToProcessingVector(PApplet pApplet, Controller lmController, Vector leapVector, int hand)
+			throws IllegalArgumentException {
+		if (hand != LEFT_HAND && hand != RIGHT_HAND)
+			throw new IllegalArgumentException("Hand must be either LeapMotionUtil.LEFT_HAND or LeapMotionUtil.RIGHT_HAND.");
 
+		float pxMin = 0;
+		float pxMax = 0;
+		float lxMin = 0;
+		float lxMax = 0;
+		
 		switch (hand) {
 		case LEFT_HAND:
-			xMin = 0;
-			xMax = pApplet.width / 2;
+			pxMin = 0;
+			pxMax = pApplet.width / 2;
+			lxMin = 0;
+			lxMax = 0.5f;
 			break;
 		case RIGHT_HAND:
-			xMin = pApplet.width / 2;
-			xMax = pApplet.width;
+			pxMin = pApplet.width / 2;
+			pxMax = pApplet.width;
+			lxMin = 0.5f;
+			lxMax = 1.0f;
 			break;
 		}
-
+		
 		// Normalize the coordinates.
 		InteractionBox iBox = lmController.frame().interactionBox();
 		Vector iBoxVector = iBox.normalizePoint(leapVector);
 
+		if (iBoxVector.getX() < lxMin)
+			iBoxVector.setX(lxMin);
+		else if ((iBoxVector.getX() > lxMax))
+			iBoxVector.setX(lxMax);
+		
 		// Center points around the center of window, since the Leap origin is the center. Y is negative since coordinate system is different.
-		return new Vector(PApplet.map(iBoxVector.getX(), 0, 1, xMin, xMax), PApplet.map(iBoxVector.getY(), 0, 1, pApplet.height, 0),
+		return new Vector(PApplet.map(iBoxVector.getX(), lxMin, lxMax, pxMin, pxMax), PApplet.map(iBoxVector.getY(), 0, 1, pApplet.height, 0),
 				iBoxVector.getZ());
 	}
 }
