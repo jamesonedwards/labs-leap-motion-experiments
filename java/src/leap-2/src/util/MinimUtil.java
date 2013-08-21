@@ -10,6 +10,18 @@ public class MinimUtil {
 
 	}
 
+	/**
+	 * Draw a waveform based on an AudioOutput object.
+	 * 
+	 * @param pApplet
+	 * @param minim
+	 * @param audioOutput
+	 * @param waveformMultiplier
+	 * @param waveformXOffest
+	 * @param waveformYOffest
+	 * @param leftRightSpread
+	 * @param strokeRgb
+	 */
 	public static void drawWaveform(PApplet pApplet, Minim minim, AudioOutput audioOutput, int waveformMultiplier, float waveformXOffest,
 			float waveformYOffest, float leftRightSpread, int[] strokeRgb) {
 		/*
