@@ -52,6 +52,7 @@ public class TempoMusicPlayer extends PApplet {
 	private static boolean enableEffects = true;
 	private static String assetPath = System.getProperty("user.dir") + File.separator + "assets" + File.separator;
 	private final static String audioFilePath = assetPath + "8-DaftPunkGetLuckyfeatPharrellWilliams.mp3";
+	//private final static String audioFilePath = "http://www.iamtheheat.com/champagne/music/golden_hearts/I_Am_The_Heat-Life_Comes_At_You_Medium_Fast.mp3";
 
 	/**
 	 * HACK: Get this PApplet to run from command line.
@@ -79,7 +80,8 @@ public class TempoMusicPlayer extends PApplet {
 
 			minim = new Minim(this);
 			// TODO: Load an audio file (make this interactive?).
-			AudioRecordingStream myFile = minim.loadFileStream(audioFilePath, // the file to load
+			AudioRecordingStream myFile = minim.loadFileStream(
+					audioFilePath, // the file to load
 					FILE_BUFFER_SIZE, // Specify 512 for the length of the sample buffers (the default buffer size is 1024).
 					true // whether to load it totally into memory or not we say true because the file is short.
 					);
