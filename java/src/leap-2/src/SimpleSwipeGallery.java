@@ -27,13 +27,18 @@ public class SimpleSwipeGallery extends PApplet {
 	private final static int WINDOW_HEIGHT = 720;
 	private final static int FRAME_RATE = 30;
 	private final static int SWIPE_WAIT_FRAMES = floor(FRAME_RATE / 4);
+	private final static float SWIPE_X_THESHOLD = 0.5f;
+	private final static float SWIPE_Y_THESHOLD = 0.3f;
+	private final static float ZOOM_INCREMENT = 0.3f;
+	private final static float ZOOM_MAX = 5.0f;
+	private final static float ZOOM_MIN = 0.1f;
 
 	private static Controller lmController;
 	private static float centerX;
 	private static float centerY;
 	private static String assetPath = System.getProperty("user.dir") + File.separator + "assets" + File.separator + "gallery" + File.separator;
 	private static float scale = 1.0f;
-	
+
 	// Carousel of images, as an array.
 	private static PImage[] images;
 	private static int curImageIndex = 0;
@@ -80,8 +85,9 @@ public class SimpleSwipeGallery extends PApplet {
 
 			// Set gestures to track.
 			lmController.enableGesture(Gesture.Type.TYPE_SWIPE);
-			// if (lmController.config().setFloat("Gesture.Swipe.MinLength", 200.0f))
-			// lmController.config().save();
+			if (lmController.config().setFloat("Gesture.Swipe.MinLength", 150.0f)
+					&& lmController.config().setFloat("Gesture.Swipe.MinVelocity", 100f))
+				lmController.config().save();
 		} catch (Exception ex) {
 			String msg = "Exception details: \nType: " + ex.getClass().toString() + "\nMessage: " + ex.getMessage() + "\nStack trace: "
 					+ ExceptionUtils.getStackTrace(ex) + "\n\n" + "Object state: "
@@ -95,7 +101,7 @@ public class SimpleSwipeGallery extends PApplet {
 	public void draw() {
 		// Show current image.
 		background(0);
-		
+
 		if (images.length > 0) {
 			// If a swipe has just happened, wait before the next swipe can be detected.
 			if (swipeWaitCnt > 0) {
@@ -104,28 +110,49 @@ public class SimpleSwipeGallery extends PApplet {
 				if (lmController.isConnected()) {
 					Frame frame = lmController.frame();
 
+					// TODO: The swipe gestures don't see to work very well...
+					
 					for (Gesture gesture : frame.gestures()) {
 						if (gesture.type() == Type.TYPE_SWIPE && gesture.state() == State.STATE_STOP) {
 							LOGGER.info("Swipe gesture detected.");
 							SwipeGesture swipe = new SwipeGesture(gesture);
-							if (swipe.direction().getX() > 0f)
+							if (swipe.direction().getX() > SWIPE_X_THESHOLD) {
 								nextImage();
-							else if (swipe.direction().getX() < 0f)
+								LOGGER.info("Showing image " + String.valueOf(curImageIndex + 1) + " of " + String.valueOf(images.length));
+							} else if (swipe.direction().getX() < -SWIPE_X_THESHOLD) {
 								prevImage();
-							LOGGER.info("Showing image " + String.valueOf(curImageIndex + 1) + " of " + String.valueOf(images.length));
-							
-							// TODO: Adjust the scale (i.e. zoom in/out) using y-axis swipes. Build a min threshold for both x and y swipes.
-							
+								LOGGER.info("Showing image " + String.valueOf(curImageIndex + 1) + " of " + String.valueOf(images.length));
+							} else if (swipe.direction().getY() > SWIPE_Y_THESHOLD) {
+								scaleUp();
+							} else if (swipe.direction().getY() < -SWIPE_Y_THESHOLD) {
+								scaleDown();
+							}
+
 							// Reset swipe wait counter.
 							swipeWaitCnt = SWIPE_WAIT_FRAMES;
 						}
 					}
 				}
 			}
-			
 
 			ShapeUtil.centerImage(this, images[curImageIndex], scale);
 		}
+	}
+
+	private void scaleUp() {
+		if (scale >= ZOOM_MAX - ZOOM_INCREMENT)
+			scale = ZOOM_MAX;
+		else
+			scale += ZOOM_INCREMENT;
+		LOGGER.info("Image scale changed to " + String.valueOf(scale));
+	}
+
+	private void scaleDown() {
+		if (scale <= ZOOM_MIN + ZOOM_INCREMENT)
+			scale = ZOOM_MIN;
+		else
+			scale -= ZOOM_MIN;
+		LOGGER.info("Image scale changed to " + String.valueOf(scale));
 	}
 
 	private void nextImage() {
