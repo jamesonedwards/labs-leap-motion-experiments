@@ -182,12 +182,18 @@ public class ShapeUtil {
 	 * @throws Exception
 	 */
 	public static PImage[] loadImages(PApplet pApplet, String path) throws Exception {
+		// TODO: Add other file extensions here.
+		final String[] allowedExtensions = new String[] { "jpg", "jpeg", "gif", "tif", "png" };
 		ArrayList<PImage> pImages = new ArrayList<PImage>();
 
 		File[] imagefiles = new File(path).listFiles(new FilenameFilter() {
 			public boolean accept(File dir, String name) {
-				// FIXME: Need to add more extensions!
-				return name.toLowerCase().endsWith(".jpg");
+				for (final String ext : allowedExtensions) {
+					if (name.toLowerCase().endsWith("." + ext)) {
+						return (true);
+					}
+				}
+				return (false);
 			}
 		});
 
@@ -210,8 +216,21 @@ public class ShapeUtil {
 	 * @param image
 	 */
 	public static void centerImage(PApplet pApplet, PImage image) {
-		float x = (pApplet.width - image.width) / 2;
-		float y = (pApplet.height - image.height) / 2;
-		pApplet.image(image, x, y);
+		centerImage(pApplet, image, 1.0f);
+	}
+
+	/**
+	 * Place an image in the center of the window.
+	 * 
+	 * @param pApplet
+	 * @param image
+	 * @param scale
+	 */
+	public static void centerImage(PApplet pApplet, PImage image, float scale) {
+		float effectiveWidth = image.width * scale;
+		float effectiveHeight = image.height * scale;
+		float x = (pApplet.width - effectiveWidth) / 2;
+		float y = (pApplet.height - effectiveHeight) / 2;
+		pApplet.image(image, x, y, effectiveWidth, effectiveHeight);
 	}
 }
