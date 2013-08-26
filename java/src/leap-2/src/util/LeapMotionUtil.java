@@ -1,7 +1,5 @@
 package util;
 
-import org.gstreamer.lowlevel.Handle;
-
 import processing.core.PApplet;
 
 import com.leapmotion.leap.Controller;
