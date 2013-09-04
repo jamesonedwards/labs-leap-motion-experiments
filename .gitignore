@@ -15,3 +15,5 @@
 /java/src/leap-2/deploy
 
 /java/src/leap-2/*.log
+
+/java/src/leap-2/bin

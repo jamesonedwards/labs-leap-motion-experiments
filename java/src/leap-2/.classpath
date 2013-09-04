@@ -23,5 +23,7 @@
 	</classpathentry>
 	<classpathentry kind="lib" path="C:/processing/modes/java/libraries/video/library/gstreamer-java.jar"/>
 	<classpathentry kind="lib" path="C:/processing/modes/java/libraries/video/library/jna.jar"/>
+	<classpathentry kind="lib" path="C:/processing/core/library/jogl-all.jar"/>
+	<classpathentry kind="lib" path="C:/processing/core/library/jogl-all-natives-windows-amd64.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

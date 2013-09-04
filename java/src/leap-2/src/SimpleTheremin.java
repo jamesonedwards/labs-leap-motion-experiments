@@ -19,6 +19,8 @@ import com.leapmotion.leap.Vector;
 import ddf.minim.*;
 import ddf.minim.signals.*;
 
+// TODO: Build a better signal: http://www.openprocessing.org/sketch/55514
+
 // TODO: "mcgaremin"
 public class SimpleTheremin extends PApplet {
 	// Logging:
