@@ -9,34 +9,38 @@ import processing.core.*;
 import util.LeapMotionUtil;
 import util.ShapeUtil;
 
-import com.leapmotion.leap.CircleGesture;
 import com.leapmotion.leap.Controller;
 import com.leapmotion.leap.Frame;
 import com.leapmotion.leap.Gesture;
 import com.leapmotion.leap.Pointable;
-import com.leapmotion.leap.Gesture.State;
-import com.leapmotion.leap.ScreenTapGesture;
 import com.leapmotion.leap.SwipeGesture;
 import com.leapmotion.leap.Vector;
 
 /**
+ * Sources:
+ * http://processing.org/tutorials/transform2d/
+ * http://processing.org/tutorials/p3d/
+ * 
  * @author jameson.edwards
  */
 public class Explore3D extends PApplet {
 	// Logging:
 	private final static Logger LOGGER = Logger.getLogger(Explore3D.class.getName() + "Logger");
+	
+	// Constants:
 	private final static int WINDOW_WIDTH = 1280;
 	private final static int WINDOW_HEIGHT = 720;
-
+	private final static float Z_AXIS_MULTIPLIER = 3f;
+	private final static int SHAPE_COUNT = 3;
+	
+	// Global variables:
 	private static Controller lmController;
-	private static float projectionMultiplier = 1f;
-	private static float xyMultiplier = 1000f;
-
 	private static float xmag, ymag = 0;
 	private static float newXmag, newYmag = 0;
-
-	private static float pointerX;
-	private static float pointerY;
+	private static float pointerX = 0;
+	private static float pointerY = 0;
+	private static float pointerZ = 1 / Z_AXIS_MULTIPLIER;
+	private static int currentShape = 0;
 	
 	/**
 	 * HACK: Get this PApplet to run from command line.
@@ -65,14 +69,9 @@ public class Explore3D extends PApplet {
 			lmController = new Controller();
 
 			// Set gestures to track.
-			// lmController.enableGesture(Gesture.Type.TYPE_SCREEN_TAP);
-			// lmController.enableGesture(Gesture.Type.TYPE_CIRCLE);
 			lmController.enableGesture(Gesture.Type.TYPE_SWIPE);
-
-			// Set screen tap config.
-			if (lmController.config().setFloat("Gesture.ScreenTap.MinForwardVelocity", 50.0f)
-					&& lmController.config().setFloat("Gesture.ScreenTap.HistorySeconds", .1f)
-					&& lmController.config().setFloat("Gesture.ScreenTap.MinDistance", 3.0f))
+			if (lmController.config().setFloat("Gesture.Swipe.MinLength", 150.0f)
+					&& lmController.config().setFloat("Gesture.Swipe.MinVelocity", 100f))
 				lmController.config().save();
 		} catch (Exception ex) {
 			String msg = "Exception details: \nType: " + ex.getClass().toString() + "\nMessage: " + ex.getMessage() + "\nStack trace: "
@@ -89,8 +88,8 @@ public class Explore3D extends PApplet {
 	 * @param x
 	 * @param y
 	 */
-	private void drawCube(float x, float y) {
-		LOGGER.info("(" + x + ", " + y + ")");
+	private void drawCube(float x, float y, float z) {
+		LOGGER.fine("(" + x + ", " + y + ", " + z + ")");
 		
 		pushMatrix();
 		translate(width / 2, height / 2, -30);
@@ -111,7 +110,9 @@ public class Explore3D extends PApplet {
 		rotateX(-ymag);
 		rotateY(-xmag);
 
-		scale(90);
+		//scale(90);
+		// Control scaling with the z coordinate.
+		scale(90f * z);
 		beginShape(QUADS);
 
 		fill(0, 1, 1);
@@ -173,11 +174,12 @@ public class Explore3D extends PApplet {
 	}
 
 	public void draw() {
-
 		/*
 		 * TODO: - swipe between shapes (cube, sphere, etc) - rotate in 3D space WITH WHAT? - zoom in/out in 3D space WITH WHAT?
+		 * 
+		 * Textured cube: http://processing.org/examples/texturecube.html
+		 * Globe: http://processing.org/examples/texturesphere.html
 		 */
-
 		background(0.5f);
 
 		if (lmController.isConnected()) {
@@ -189,32 +191,53 @@ public class Explore3D extends PApplet {
 				Vector translatedPosition = LeapMotionUtil.leapToProcessingVector(this, lmController, foremost.tipPosition());
 				pointerX = translatedPosition.getX();
 				pointerY = translatedPosition.getY();
+				pointerZ = translatedPosition.getZ();
 			}
 
 			for (Gesture gesture : frame.gestures()) {
-				switch (gesture.type()) {
-				case TYPE_CIRCLE:
-					LOGGER.info("Circle gesture detected.");
-					break;
-				case TYPE_SWIPE:
+				if (gesture.type() == Gesture.Type.TYPE_SWIPE) {
 					LOGGER.info("Swipe gesture detected.");
 					SwipeGesture swipe = new SwipeGesture(gesture);
-					break;
-				case TYPE_SCREEN_TAP:
-					LOGGER.info("Screen tap gesture detected.");
-					break;
-				case TYPE_KEY_TAP:
-					LOGGER.info("Key tap gesture detected.");
-					break;
-				default:
-					LOGGER.info("Unknown gesture detected.");
-					break;
+					if (swipe.direction().getX() > 0) {
+						// Swiped right.
+						incrementShape();
+					} else if (swipe.direction().getX() < 0) {
+						// Swiped left.
+						decrementShape();
+					} else {
+						LOGGER.info("NOT SURE HOW WE GOT HERE.");
+					}
 				}
 			}
 		}
-		
-		//drawCube(mouseX, mouseY);
-		drawCube(pointerX, pointerY);
+
+		switch (currentShape) {
+		case 0:
+			drawCube(pointerX, pointerY, pointerZ * Z_AXIS_MULTIPLIER);
+			break;
+		case 1:
+			// TODO: MORE HERE
+			break;
+		case 2:
+			// TODO: MORE HERE
+			break;
+		}
+	}
+	
+	private void incrementShape() {
+		if (currentShape >= SHAPE_COUNT - 1)
+			currentShape = 0;
+		else
+			currentShape++;
+		LOGGER.info("Swiping to forward to shape: " + currentShape);
+	}
+
+	private void decrementShape() {
+		if (currentShape <= 0)
+			currentShape = SHAPE_COUNT - 1;
+		else
+			currentShape--;
+		LOGGER.info("Swiping to back to shape: " + currentShape);
 	}
 
 	private void cleanup() {
