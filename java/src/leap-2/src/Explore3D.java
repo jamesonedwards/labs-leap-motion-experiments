@@ -207,7 +207,7 @@ public class Explore3D extends PApplet {
 		rotateY(-xmag);
 
 		// scale(90);
-		// Control scaling with the z coordinate (with lower zoom limit.
+		// Control scaling with the z coordinate (with lower zoom limit).
 		z = z < SCALE_MIN ? SCALE_MIN : z;
 		scale(90f * z);
 		beginShape(QUADS);
